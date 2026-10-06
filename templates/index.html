@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Account Takeover Detection{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+<div class="hero text-center py-5 mb-4 rounded">
+    <i class="bi bi-shield-lock-fill hero-icon text-info"></i>
+    <h1 class="display-5 fw-bold mt-3">Customer Account Takeover Detection</h1>
+    <p class="lead text-secondary mb-4">
+        A supervised machine learning system that classifies login attempts
+        as <span class="text-success fw-semibold">Normal</span> or
+        <span class="text-danger fw-semibold">Potentially Compromised</span>.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="{{ url_for('predict') }}" class="btn btn-info btn-lg px-4">
+            <i class="bi bi-search"></i> Predict an Account
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-speedometer2"></i> View Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- ================= STAT CARDS ================= -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 bg-dark border-secondary">
+            <div class="card-body text-center">
+                <i class="bi bi-diagram-3 feature-icon text-info"></i>
+                <h5 class="card-title mt-3">Supervised Learning</h5>
+                <p class="card-text text-secondary small">
+                    Trained on the <strong>Login Data Set for Risk-Based Authentication</strong>,
+                    using labeled login attempts with a known
+                    <em>Is Account Takeover</em> target.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 bg-dark border-secondary">
+            <div class="card-body text-center">
+                <i class="bi bi-cpu feature-icon text-info"></i>
+                <h5 class="card-title mt-3">3 ML Models Compared</h5>
+                <p class="card-text text-secondary small">
+                    Logistic Regression, Decision Tree and Random Forest were
+                    trained and evaluated using accuracy, precision, recall,
+                    F1-score and ROC-AUC.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 bg-dark border-secondary">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up-arrow feature-icon text-info"></i>
+                <h5 class="card-title mt-3">Explainable Output</h5>
+                <p class="card-text text-secondary small">
+                    Every prediction includes a probability score, and the
+                    dashboard visualizes the confusion matrix and feature
+                    importances of the final model.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= PIPELINE OVERVIEW ================= -->
+<div class="row g-4 align-items-center mb-4">
+    <div class="col-lg-7">
+        <h3 class="text-info mb-3">How it works</h3>
+        <ol class="text-secondary">
+            <li><strong>Data loading</strong> — login attempts are read from a CSV file.</li>
+            <li><strong>Cleaning &amp; preprocessing</strong> — missing values are imputed, numeric features are scaled, categorical features are one-hot encoded.</li>
+            <li><strong>Feature engineering</strong> — the login timestamp is converted into <code>login_hour</code> and <code>login_day_of_week</code>.</li>
+            <li><strong>Model training</strong> — three classifiers are trained with class balancing to handle the rare ATO class.</li>
+            <li><strong>Evaluation</strong> — models are compared and the best one (by F1-score) is saved with <code>joblib</code>.</li>
+            <li><strong>Web deployment</strong> — a Flask app loads the saved model and serves predictions through a form.</li>
+        </ol>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card bg-dark border-info">
+            <div class="card-body">
+                <h5 class="card-title text-info">
+                    <i class="bi bi-info-circle"></i> About the dataset
+                </h5>
+                <p class="card-text text-secondary small mb-2">
+                    <strong>Login Data Set for Risk-Based Authentication</strong> —
+                    a large-scale, publicly available research dataset of
+                    realistic single-sign-on login attempts with a documented
+                    account-takeover ground-truth label.
+                </p>
+                <p class="text-secondary small mb-0">
+                    <em>Note:</em> the dataset is synthetic and is intended for
+                    research and educational use only.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}About | Account Takeover Detection{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <!-- ==================== HEADER ==================== -->
+        <div class="text-center mb-5">
+            <i class="bi bi-info-circle display-4 text-info"></i>
+            <h2 class="text-info mt-2">About This Project</h2>
+            <p class="text-secondary mb-0">
+                Customer Account Takeover Detection — a supervised machine
+                learning classification system built with Python and Flask.
+            </p>
+        </div>
+
+        <!-- ==================== PROBLEM STATEMENT ==================== -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary">
+                <i class="bi bi-exclamation-triangle text-warning"></i>
+                <strong>Problem Statement</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary mb-0">
+                    Account takeover (ATO) is a form of online fraud in which an
+                    attacker gains unauthorized access to a customer account,
+                    typically by using stolen credentials, credential stuffing,
+                    or phishing. Because the login is often performed with
+                    <em>valid</em> credentials, traditional password checks
+                    cannot detect it. The goal of this project is to build a
+                    machine learning classifier that flags login attempts that
+                    are likely to be account takeovers, based on behavioural and
+                    contextual features of the login attempt.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== OBJECTIVES ==================== -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary">
+                <i class="bi bi-bullseye text-info"></i>
+                <strong>Objectives</strong>
+            </div>
+            <div class="card-body">
+                <ol class="text-secondary mb-0">
+                    <li>Load and clean a real-world login-attempt dataset.</li>
+                    <li>Engineer and preprocess features suitable for supervised classification.</li>
+                    <li>Train and compare three classification algorithms:
+                        Logistic Regression, Decision Tree and Random Forest.</li>
+                    <li>Evaluate each model using accuracy, precision, recall,
+                        F1-score, ROC-AUC and a confusion matrix.</li>
+                    <li>Select the best-performing model and save it with <code>joblib</code>.</li>
+                    <li>Deploy the model through a Flask web application with a
+                        user-friendly prediction form.</li>
+                    <li>Log all predictions and present them on a dashboard.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- ==================== DATASET ==================== -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary">
+                <i class="bi bi-database text-info"></i>
+                <strong>Dataset</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary">
+                    <strong>Login Data Set for Risk-Based Authentication</strong>
+                    — a publicly available research dataset of large-scale
+                    single sign-on (SSO) login attempts. It is distributed
+                    through Zenodo (record 6782156) and provides a labeled
+                    <em>Is Account Takeover</em> field used as the target
+                    variable in this project.
+                </p>
+                <p class="text-secondary">
+                    The dataset contains the following features used by the model:
+                </p>
+                <ul class="text-secondary small">
+                    <li><code>Round-Trip Time [ms]</code> — server-side login latency</li>
+                    <li><code>ASN</code> — Autonomous System Number of the network</li>
+                    <li><code>Login Successful</code> — whether the login succeeded</li>
+                    <li><code>Is Attack IP</code> — whether the IP is in a known attacker list</li>
+                    <li><code>Country</code>, <code>Region</code>, <code>City</code> — IP-derived geography</li>
+                    <li><code>Browser Name and Version</code>, <code>OS Name and Version</code>, <code>Device Type</code></li>
+                    <li><code>Login Timestamp</code> — used to derive <code>login_hour</code> and <code>login_day_of_week</code></li>
+                </ul>
+                <p class="text-secondary small mb-0">
+                    <em>Note:</em> the dataset is synthetic and is intended for
+                    research and educational use only. It should not be used
+                    to make real production decisions.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== METHODOLOGY ==================== -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary">
+                <i class="bi bi-diagram-3 text-info"></i>
+                <strong>Machine Learning Methodology</strong>
+            </div>
+            <div class="card-body text-secondary">
+                <p><strong>1. Data loading &amp; cleaning.</strong>
+                    The CSV is read with pandas. Identifier and free-text
+                    columns with very high cardinality (IP address, user
+                    agent string, user ID) are dropped because they would
+                    cause overfitting and inflate the feature space.</p>
+
+                <p><strong>2. Feature engineering.</strong>
+                    The login timestamp is converted into two useful
+                    numeric signals: <code>login_hour</code> (0–23) and
+                    <code>login_day_of_week</code> (0–6).</p>
+
+                <p><strong>3. Preprocessing pipeline.</strong>
+                    A scikit-learn <code>ColumnTransformer</code> applies:
+                    median imputation + standard scaling for numeric
+                    features, and constant imputation + one-hot encoding
+                    for categorical features. Rare categories are grouped
+                    with <code>min_frequency=50</code> to keep the
+                    feature space manageable.</p>
+
+                <p><strong>4. Train/test split.</strong>
+                    80 % / 20 % stratified split, so the rare ATO class
+                    appears in both sets in the same proportion.</p>
+
+                <p><strong>5. Model training.</strong>
+                    Three classifiers are trained with
+                    <code>class_weight="balanced"</code> to compensate for
+                    the severe class imbalance typical of fraud data:
+                    Logistic Regression, Decision Tree and Random Forest.</p>
+
+                <p><strong>6. Evaluation.</strong>
+                    Accuracy, precision, recall, F1-score, ROC-AUC and a
+                    confusion matrix are computed on the held-out test set.
+                    Because the positive class is rare, <strong>F1-score is
+                    used as the primary selection criterion</strong>.</p>
+
+                <p class="mb-0"><strong>7. Deployment.</strong>
+                    The best pipeline (preprocessor + model) is saved with
+                    <code>joblib</code> and loaded by the Flask app at
+                    startup. The web form mirrors the trained feature schema,
+                    so new predictions use the exact same transformation
+                    pipeline.</p>
+            </div>
+        </div>
+
+        <!-- ==================== TECHNOLOGIES ==================== -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header border-secondary">
+                <i class="bi bi-stack text-info"></i>
+                <strong>Technologies Used</strong>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 text-secondary small">
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Python 3</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Flask</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Pandas &amp; NumPy</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Scikit-learn</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Matplotlib &amp; Seaborn</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Joblib</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Bootstrap 5</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Bootstrap Icons</div>
+                    <div class="col-md-4"><i class="bi bi-check2 text-info"></i> Jinja2 templates</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== LIMITATIONS ==================== -->
+        <div class="card bg-dark border-warning mb-4">
+            <div class="card-header border-warning">
+                <i class="bi bi-exclamation-octagon text-warning"></i>
+                <strong>Project Limitations</strong>
+            </div>
+            <div class="card-body">
+                <ul class="text-secondary mb-0">
+                    <li>The dataset is <strong>synthetic</strong> and highly separable,
+                        so the reported metrics are optimistic. On real traffic,
+                        performance would be substantially lower.</li>
+                    <li>The feature <code>Is Attack IP</code> is a strong indicator
+                        provided by the dataset, but in a live system it would
+                        not always be known at inference time.</li>
+                    <li>Only a subset of the full dataset is used for training,
+                        to keep the project runnable on a student machine.</li>
+                    <li>The model is not retrained automatically — it is a
+                        static snapshot saved to <code>model.pkl</code>.</li>
+                    <li>Predictions are logged locally; there is no user
+                        authentication or role-based access control on the app.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ==================== FUTURE WORK ==================== -->
+        <div class="card bg-dark border-info mb-5">
+            <div class="card-header border-info">
+                <i class="bi bi-rocket-takeoff text-info"></i>
+                <strong>Future Improvements</strong>
+            </div>
+            <div class="card-body">
+                <ul class="text-secondary mb-0">
+                    <li>Add user-behaviour features (e.g. session history,
+                        typing cadence, geo-velocity).</li>
+                    <li>Handle class imbalance with SMOTE or focal loss.</li>
+                    <li>Compare with gradient boosting algorithms such as
+                        XGBoost or LightGBM.</li>
+                    <li>Add threshold tuning to trade off precision vs. recall
+                        depending on business requirements.</li>
+                    <li>Deploy with a proper database (SQLite or PostgreSQL)
+                        instead of a CSV log.</li>
+                    <li>Add authentication and audit logging to the Flask app.</li>
+                    <li>Set up automated retraining on new data.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

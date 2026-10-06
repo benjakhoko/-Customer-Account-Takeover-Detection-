@@ -1,0 +1,210 @@
+/* =========================================================
+   Customer Account Takeover Detection - custom stylesheet
+   Built on top of Bootstrap 5.
+   ========================================================= */
+
+/* ---------- Global theme ---------- */
+:root {
+    --bg-base:      #0b1220;   /* deep navy */
+    --bg-surface:   #111a2b;   /* card surface */
+    --accent-cyan:  #22d3ee;   /* primary accent */
+    --accent-green: #34d399;
+    --accent-red:   #f87171;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Keep the footer pinned to the bottom on short pages */
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+/* ---------- Navbar ---------- */
+.navbar-brand {
+    letter-spacing: 0.3px;
+}
+
+.navbar .nav-link {
+    transition: color 0.15s ease-in-out;
+}
+
+.navbar .nav-link:hover {
+    color: var(--accent-cyan) !important;
+}
+
+/* ---------- Cards ---------- */
+.card {
+    background-color: var(--bg-surface);
+    border-radius: 0.6rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Subtle lift on hover for interactive-looking cards */
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 211, 238, 0.08);
+}
+
+.card-header {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Hero section (index page) ---------- */
+.hero {
+    background:
+        radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.10), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.08), transparent 45%),
+        var(--bg-surface);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    padding: 3rem 1.5rem;
+}
+
+.hero-icon {
+    font-size: 4.5rem;
+    filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.55));
+}
+
+/* Small feature icons used on the index page cards */
+.feature-icon {
+    font-size: 2.5rem;
+}
+
+/* ---------- Result banner (result.html) ---------- */
+.result-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.result-banner::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent 70%);
+    pointer-events: none;
+}
+
+/* ---------- Forms ---------- */
+.form-control,
+.form-select {
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    color: #e5e7eb;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #0f172a;
+    border-color: var(--accent-cyan);
+    color: #e5e7eb;
+    box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.20);
+}
+
+.form-control::placeholder {
+    color: #64748b;
+}
+
+/* Bootstrap btn-check radios: keep the chosen side visible on dark bg */
+.btn-check:checked + .btn-outline-success {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    color: #0b1220;
+}
+
+.btn-check:checked + .btn-outline-danger {
+    background-color: var(--accent-red);
+    border-color: var(--accent-red);
+    color: #0b1220;
+}
+
+/* ---------- Buttons ---------- */
+.btn-info {
+    background-color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #0b1220;
+    font-weight: 600;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+    background-color: #06b6d4;
+    border-color: #06b6d4;
+    color: #0b1220;
+}
+
+/* ---------- Tables (dashboard) ---------- */
+.table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(255, 255, 255, 0.06);
+}
+
+.table-hover > tbody > tr:hover > * {
+    background-color: rgba(34, 211, 238, 0.06);
+}
+
+/* ---------- Progress bar on result page ---------- */
+.progress {
+    background-color: #0f172a;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.8s ease;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* ---------- Links inside alerts ---------- */
+.alert a.alert-link {
+    text-decoration: underline;
+}
+
+/* ---------- Code formatting ---------- */
+code {
+    color: var(--accent-cyan);
+    background-color: rgba(34, 211, 238, 0.08);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+    font-size: 0.85em;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 576px) {
+    .hero {
+        padding: 2rem 1rem;
+    }
+    .hero-icon {
+        font-size: 3rem;
+    }
+    .display-5 {
+        font-size: 1.8rem;
+    }
+    .display-1 {
+        font-size: 3rem;
+    }
+}

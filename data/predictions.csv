@@ -1,0 +1,2 @@
+timestamp,prediction,label,probability,Round-Trip Time [ms],ASN,Login Successful,Is Attack IP,login_hour,login_day_of_week,Country,Region,City,Browser Name and Version,OS Name and Version,Device Type
+2026-10-02T09:15:57,1,Potentially Compromised Account,0.5396,35.0,7,True,False,11,3,Malawi,oslo,Blantrye,chrom,windos 11,desktop

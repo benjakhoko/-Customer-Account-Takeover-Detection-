@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Account Takeover Detection{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="text-info mb-0">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h2>
+        <p class="text-secondary mb-0">
+            Live summary of predictions stored in <code>data/predictions.csv</code>.
+        </p>
+    </div>
+    <a href="{{ url_for('predict') }}" class="btn btn-outline-info">
+        <i class="bi bi-plus-circle"></i> New Prediction
+    </a>
+</div>
+
+<!-- ============================================================ -->
+<!-- KPI CARDS                                                     -->
+<!-- ============================================================ -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-collection display-6 text-info"></i>
+                <h6 class="text-secondary mt-2 mb-1">Total Predictions</h6>
+                <h2 class="fw-bold mb-0">{{ total }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark border-success h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-check display-6 text-success"></i>
+                <h6 class="text-secondary mt-2 mb-1">Normal</h6>
+                <h2 class="fw-bold text-success mb-0">{{ normal }}</h2>
+                {% if total > 0 %}
+                <small class="text-secondary">
+                    {{ "%.1f"|format(normal / total * 100) }}% of all predictions
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark border-danger h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-exclamation display-6 text-danger"></i>
+                <h6 class="text-secondary mt-2 mb-1">Potentially Compromised</h6>
+                <h2 class="fw-bold text-danger mb-0">{{ compromised }}</h2>
+                {% if total > 0 %}
+                <small class="text-secondary">
+                    {{ "%.1f"|format(compromised / total * 100) }}% of all predictions
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if total == 0 %}
+<!-- Empty-state message when no predictions have been made yet -->
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    No predictions yet. Run a prediction from the
+    <a href="{{ url_for('predict') }}" class="alert-link">Predict page</a>
+    to populate the dashboard.
+</div>
+{% endif %}
+
+<!-- ============================================================ -->
+<!-- MODEL PERFORMANCE TABLE                                       -->
+<!-- ============================================================ -->
+<div class="card bg-dark border-secondary mb-4">
+    <div class="card-header border-secondary">
+        <i class="bi bi-bar-chart-line text-info"></i>
+        <strong>Model Performance Comparison</strong>
+        <span class="text-secondary small ms-2">
+            (metrics measured on the held-out test set during training)
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if performance %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th class="text-end">Accuracy</th>
+                        <th class="text-end">Precision</th>
+                        <th class="text-end">Recall</th>
+                        <th class="text-end">F1-score</th>
+                        <th class="text-end">ROC-AUC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in performance %}
+                    {% set is_best = loop.first %}
+                    <tr {% if is_best %}class="table-active border-start border-info border-4"{% endif %}>
+                        <td>
+                            {% if is_best %}
+                                <i class="bi bi-trophy-fill text-warning"></i>
+                            {% endif %}
+                            <strong>{{ row.Model }}</strong>
+                            {% if is_best %}
+                                <span class="badge bg-info text-dark ms-2">Best</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ "%.4f"|format(row.Accuracy) }}</td>
+                        <td class="text-end">{{ "%.4f"|format(row.Precision) }}</td>
+                        <td class="text-end">{{ "%.4f"|format(row.Recall) }}</td>
+                        <td class="text-end fw-bold">{{ "%.4f"|format(row.F1) }}</td>
+                        <td class="text-end">{{ "%.4f"|format(row.ROC_AUC) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 border-top border-secondary">
+            <small class="text-secondary">
+                <i class="bi bi-info-circle"></i>
+                The <strong>best</strong> model (highest F1-score) is the one saved to
+                <code>models/model.pkl</code> and used by this web application.
+            </small>
+        </div>
+        {% else %}
+        <div class="p-3 text-secondary">
+            No performance data found. Run <code>python train_model.py</code> to generate it.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CHARTS                                                        -->
+<!-- ============================================================ -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-header border-secondary">
+                <i class="bi bi-grid-3x3 text-info"></i>
+                <strong>Confusion Matrix</strong>
+            </div>
+            <div class="card-body text-center">
+                {% if has_confusion %}
+                    <img src="{{ url_for('results_file', filename='confusion_matrix.png') }}"
+                         alt="Confusion Matrix"
+                         class="img-fluid rounded">
+                    <p class="text-secondary small mt-3 mb-0">
+                        Rows = actual class, columns = predicted class.
+                    </p>
+                {% else %}
+                    <p class="text-secondary mb-0">
+                        Chart not found. Run <code>python train_model.py</code>.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-header border-secondary">
+                <i class="bi bi-bar-chart text-info"></i>
+                <strong>Feature Importances</strong>
+            </div>
+            <div class="card-body text-center">
+                {% if has_importance %}
+                    <img src="{{ url_for('results_file', filename='feature_importance.png') }}"
+                         alt="Feature Importance"
+                         class="img-fluid rounded">
+                    <p class="text-secondary small mt-3 mb-0">
+                        Top 15 features ranked by the final model.
+                    </p>
+                {% else %}
+                    <p class="text-secondary mb-0">
+                        Chart not available (the best model may not expose
+                        <code>feature_importances_</code>).
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- RECENT PREDICTIONS                                            -->
+<!-- ============================================================ -->
+<div class="card bg-dark border-secondary mb-5">
+    <div class="card-header border-secondary">
+        <i class="bi bi-clock-history text-info"></i>
+        <strong>Recent Predictions</strong>
+        <span class="text-secondary small ms-2">(last 10, newest first)</span>
+    </div>
+    <div class="card-body p-0">
+        {% if recent %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover table-sm mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Result</th>
+                        <th class="text-end">P(ATO)</th>
+                        <th>Location</th>
+                        <th>Device</th>
+                        <th>RTT (ms)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recent %}
+                    <tr>
+                        <td class="text-secondary small">{{ r.timestamp }}</td>
+                        <td>
+                            {% if r.prediction == 1 %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    Compromised
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Normal
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {{ "%.2f%%"|format(r.probability * 100) }}
+                        </td>
+                        <td class="small">
+                            {{ r.City }}, {{ r.Country }}
+                        </td>
+                        <td class="small">{{ r["Device Type"] }}</td>
+                        <td class="small">{{ r["Round-Trip Time [ms]"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-3 text-secondary">
+            No predictions recorded yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

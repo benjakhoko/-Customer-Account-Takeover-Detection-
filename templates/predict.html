@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Predict | Account Takeover Detection{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <div class="text-center mb-4">
+            <h2 class="text-info">
+                <i class="bi bi-search"></i> Account Takeover Prediction
+            </h2>
+            <p class="text-secondary mb-0">
+                Enter the login-activity details below. The model will classify
+                the attempt as <span class="text-success fw-semibold">Normal</span>
+                or <span class="text-danger fw-semibold">Potentially Compromised</span>.
+            </p>
+        </div>
+
+        {# ---------- Error alert (only shown if app.py passed an error) ---------- #}
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Please fix the following:</strong> {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('predict') }}" class="needs-validation" novalidate>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 1: Location                                           -->
+            <!-- ============================================================ -->
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-header border-secondary">
+                    <i class="bi bi-geo-alt text-info"></i>
+                    <strong>Location Information</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Country <span class="text-danger">*</span></label>
+                            <input type="text" name="country" class="form-control"
+                                   placeholder="e.g. Norway" required
+                                   value="{{ request.form.country or '' }}">
+                            <div class="invalid-feedback">Country is required.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Region <span class="text-danger">*</span></label>
+                            <input type="text" name="region" class="form-control"
+                                   placeholder="e.g. Oslo" required
+                                   value="{{ request.form.region or '' }}">
+                            <div class="invalid-feedback">Region is required.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City <span class="text-danger">*</span></label>
+                            <input type="text" name="city" class="form-control"
+                                   placeholder="e.g. Oslo" required
+                                   value="{{ request.form.city or '' }}">
+                            <div class="invalid-feedback">City is required.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 2: Device / Browser / OS                              -->
+            <!-- ============================================================ -->
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-header border-secondary">
+                    <i class="bi bi-laptop text-info"></i>
+                    <strong>Device Information</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Device Type <span class="text-danger">*</span></label>
+                            <select name="device" class="form-select" required>
+                                <option value="" disabled {% if not request.form.device %}selected{% endif %}>Choose…</option>
+                                {% for d in ["desktop", "mobile", "tablet", "bot", "unknown"] %}
+                                <option value="{{ d }}" {% if request.form.device == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a device type.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Browser (name and version) <span class="text-danger">*</span></label>
+                            <input type="text" name="browser" class="form-control"
+                                   placeholder="e.g. Chrome 116.0" required
+                                   value="{{ request.form.browser or '' }}">
+                            <div class="invalid-feedback">Browser info is required.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Operating System <span class="text-danger">*</span></label>
+                            <input type="text" name="os" class="form-control"
+                                   placeholder="e.g. Windows 10" required
+                                   value="{{ request.form.os or '' }}">
+                            <div class="invalid-feedback">OS info is required.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 3: Network / Login details                            -->
+            <!-- ============================================================ -->
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-header border-secondary">
+                    <i class="bi bi-hdd-network text-info"></i>
+                    <strong>Network &amp; Login Details</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Round-Trip Time (ms) <span class="text-danger">*</span>
+                                <i class="bi bi-question-circle text-secondary"
+                                   data-bs-toggle="tooltip"
+                                   title="Server-side latency for the login request in milliseconds."></i>
+                            </label>
+                            <input type="number" name="rtt" class="form-control"
+                                   min="0" step="1" placeholder="e.g. 320" required
+                                   value="{{ request.form.rtt or '' }}">
+                            <div class="invalid-feedback">Enter a positive number.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                ASN <span class="text-danger">*</span>
+                                <i class="bi bi-question-circle text-secondary"
+                                   data-bs-toggle="tooltip"
+                                   title="Autonomous System Number of the network the login came from."></i>
+                            </label>
+                            <input type="number" name="asn" class="form-control"
+                                   min="0" step="1" placeholder="e.g. 2119" required
+                                   value="{{ request.form.asn or '' }}">
+                            <div class="invalid-feedback">Enter a non-negative integer.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Login Timestamp <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="timestamp" class="form-control" required
+                                   value="{{ request.form.timestamp or '' }}">
+                            <div class="invalid-feedback">Please provide a valid date and time.</div>
+                            <div class="form-text text-secondary small">
+                                The hour and day-of-week are extracted automatically.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label d-block">
+                                Was the login successful? <span class="text-danger">*</span>
+                            </label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="login_success"
+                                       id="login_yes" value="1" required
+                                       {% if request.form.login_success == "1" %}checked{% endif %}>
+                                <label class="btn btn-outline-success" for="login_yes">Yes</label>
+
+                                <input type="radio" class="btn-check" name="login_success"
+                                       id="login_no" value="0"
+                                       {% if request.form.login_success == "0" %}checked{% endif %}>
+                                <label class="btn btn-outline-danger" for="login_no">No</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label d-block">
+                                Is this a known attack IP? <span class="text-danger">*</span>
+                                <i class="bi bi-question-circle text-secondary"
+                                   data-bs-toggle="tooltip"
+                                   title="Whether the IP appears in a known attacker list (as provided by the dataset)."></i>
+                            </label>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="is_attack_ip"
+                                       id="attack_yes" value="1" required
+                                       {% if request.form.is_attack_ip == "1" %}checked{% endif %}>
+                                <label class="btn btn-outline-danger" for="attack_yes">Yes</label>
+
+                                <input type="radio" class="btn-check" name="is_attack_ip"
+                                       id="attack_no" value="0"
+                                       {% if request.form.is_attack_ip == "0" %}checked{% endif %}>
+                                <label class="btn btn-outline-success" for="attack_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- ACTIONS                                                       -->
+            <!-- ============================================================ -->
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <div class="d-flex gap-2">
+                    <button type="reset" class="btn btn-outline-light">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-info px-4">
+                        <i class="bi bi-shield-check"></i> Predict
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Bootstrap client-side validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+
+        // Enable Bootstrap tooltips (the little "?" icons)
+        const tooltipEls = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipEls.forEach(el => new bootstrap.Tooltip(el));
+    })();
+</script>
+{% endblock %}
